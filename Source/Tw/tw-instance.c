@@ -20,8 +20,8 @@ struct Tw_Instance
 };
 
 #define TW_ASSERT_INSTANCE(i) \
-    Tw_Assert(i->property!=NULL, "Property can not be NULL"); \
-    Tw_Assert(i!=property_updater, "Property Updater can not be NULL"); \
+    Tw_Assert(NULL!=i->property, "Property can not be NULL"); \
+    Tw_Assert(NULL!=i->property_updater, "Property Updater can not be NULL"); \
 
 Tw_Instance* Tw_CreateInstance(
     Tw_Float           initial,

@@ -10,10 +10,10 @@ extern "C" {
 #endif
 
 
-typedef float              Tw_Float;
-typedef bool               Tw_Bool;
-typedef void*              Tw_Ptr;
-typedef struct Tw_Instance Tw_Instance;
+typedef float              Tw_Float;    ///< Float Type
+typedef bool               Tw_Bool;     ///< Bool Type
+typedef void*              Tw_Ptr;      ///< Generic Pointer Type
+typedef struct Tw_Instance Tw_Instance; ///< Core Tween Object Type
 
 typedef void     (*Tw_PropertyUpdater)(Tw_Ptr, Tw_Float);
 typedef Tw_Float (*Tw_EasingFunction) (Tw_Float);

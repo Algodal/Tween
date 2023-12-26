@@ -11,7 +11,7 @@ void Tw_Assert(bool cond, const char* msg)
 {
     if(cond == false)
     {
-        printf("Tween error: %s\n");
+        printf("Tween error: %s\n", msg);
         exit(EXIT_FAILURE);
     }
 }
