@@ -22,6 +22,20 @@ add_library(tw SHARED
     Source/Tw/tw-types.h
     Source/Tw/tw-functions.c
     Source/Tw/tw-instance.c
+    Source/Tw/tw-easing.c
+)
+
+target_link_libraries(tw
+    PRIVATE m
+)
+
+add_library(tw-thread SHARED
+    Source/Tw/tw-thread.c
+    Source/tinycthread/tinycthread.c
+)
+
+target_link_libraries(tw-thread
+    PRIVATE tw
 )
 
 ## Generate Export Header -----------------

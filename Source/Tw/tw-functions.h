@@ -4,14 +4,14 @@
 #define TW_FUNCTIONS_H
 
 #include <stdbool.h>
+#include "tw_export.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-
 #ifdef DEBUG
-void Tw_Assert(bool cond, const char* msg);
+TW_EXPORT void Tw_Assert(bool cond, const char* msg);
 #else
 #define Tw_Assert(...)
 #endif

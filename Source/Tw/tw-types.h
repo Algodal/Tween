@@ -17,7 +17,6 @@ typedef struct Tw_Instance Tw_Instance; ///< Core Tween Object Type
 
 typedef void     (*Tw_PropertyUpdater)(Tw_Ptr, Tw_Float);
 typedef Tw_Float (*Tw_EasingFunction) (Tw_Float);
-typedef Tw_Float (*Tw_StepGetter)     (void);
 
 
 #ifdef __cplusplus

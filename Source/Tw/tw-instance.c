@@ -6,28 +6,14 @@
 
 #include "tw-instance.h"
 #include "tw-functions.h"
+#include "tw-easing.h"
 
-struct Tw_Instance
-{
-    Tw_Float           initial;
-    Tw_Float           final;
-    Tw_Float           duration;
-    Tw_Float           current;
-    Tw_Ptr             property;
-    Tw_PropertyUpdater property_updater;
-    Tw_EasingFunction  easing_function;
-    Tw_StepGetter      step_getter;
-};
-
-#define TW_ASSERT_INSTANCE(i) \
-    Tw_Assert(NULL!=i->property, "Property can not be NULL"); \
-    Tw_Assert(NULL!=i->property_updater, "Property Updater can not be NULL"); \
+#include "tw-instance.inl"
 
 Tw_Instance* Tw_CreateInstance(
     Tw_Float           initial,
     Tw_Float           final,
     Tw_Float           duration,
-    Tw_StepGetter      step_getter,
     Tw_EasingFunction  easing_function,
     Tw_Ptr             property,
     Tw_PropertyUpdater property_updater
@@ -39,8 +25,7 @@ Tw_Instance* Tw_CreateInstance(
     i->initial = initial;
     i->final = final;
     i->duration = duration;
-    i->step_getter = step_getter ? step_getter : Tw_DefaultStepGetter;
-    i->easing_function = easing_function ? easing_function : Tw_DefaultEasingFunction;
+    i->easing_function = easing_function ? easing_function : Tw_DefaultEase;
     i->property = property;
     i->property_updater = property_updater;
     TW_ASSERT_INSTANCE(i);
@@ -54,11 +39,11 @@ Tw_Float Tw_GetValue(Tw_Instance* i)
 	return i->initial + ((size * percent) * TW_DIRECTION(i->initial, i->final));
 }
 
-void Tw_Update(Tw_Instance* i)
+void Tw_Update(Tw_Instance* i, Tw_Float step)
 {
     
     i->property_updater(i->property, Tw_GetValue(i));
-    if(false == Tw_IsDone(i)) i->current += i->step_getter();
+    if(false == Tw_IsDone(i)) i->current += step;
 }
 
 Tw_Bool Tw_IsDone(Tw_Instance* i)
@@ -78,14 +63,13 @@ void Tw_Flip(Tw_Instance* i)
 	i->final = temp;
 }
 
-Tw_Float Tw_DefaultStepGetter()
+void Tw_DestroyInstance(Tw_Instance* i)
 {
-    return 1.0f / 60;
-}
-
-Tw_Float Tw_DefaultEasingFunction(Tw_Float x)
-{
-    return x;
+    if(i)
+    {
+        Tw_DestroyThread(i);
+        free(i);
+    }
 }
 
 
