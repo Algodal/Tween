@@ -30,11 +30,14 @@ set(CMAKE_C_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN YES)
 include(GenerateExportHeader)
 generate_export_header(tw)
-TwCopyFiles(${TW_BINARY_DIR} ${TW_TW_FOLDER} "tw_export.h" "--" "TW_SRC_EXPORT")
+set(SRC_EXPORT_FILE ${TW_BINARY_DIR}/tw_export.h)
+set(DST_EXPORT_FILE ${TW_TW_FOLDER}/tw_export.h)
+include(${TW_SCRIPT_FOLDER}/TwCopyFile.cmake)
+TwCopyFile(${SRC_EXPORT_FILE} ${DST_EXPORT_FILE})
 
 ## Custom Targets --------------------------------
 add_custom_target(custom-copy-headers DEPENDS ${TW_BIN_HEADERS} )
 add_dependencies(tw custom-copy-headers)
 
-add_custom_target(custom-copy-export DEPENDS ${TW_SRC_EXPORT} )
+add_custom_target(custom-copy-export DEPENDS ${DST_EXPORT_FILE} )
 add_dependencies(custom-copy-headers custom-copy-export)
