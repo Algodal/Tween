@@ -10,7 +10,9 @@
 extern "C" {
 #endif
 
-#define TW_PI 3.141592f
+///@file Built-in Easing Functions
+
+#define TW_PI 3.141592f ///< Tween Library PI Value
 
 TW_EXPORT Tw_Float Tw_DefaultEasingFunction(Tw_Float x);
 TW_EXPORT Tw_Float Tw_EaseInSine(Tw_Float x);

@@ -11,6 +11,9 @@ extern "C" {
 #endif
 
 #ifdef DEBUG
+/// @brief Tween Library Assert Function
+/// @param cond Condition that triggers the Assert if it is false
+/// @param msg Reported Error Message
 TW_EXPORT void Tw_Assert(bool cond, const char* msg);
 #else
 #define Tw_Assert(...)

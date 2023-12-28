@@ -17,17 +17,15 @@
 
 typedef struct Tw_Thread     Tw_Thread;
 
+/// @brief Thread Data for the Instance
 struct Tw_Thread
 {
-    thrd_t            handle;
-    Tw_Float          update_rate;
-    Tw_Float          duration;
-    Tw_ThreadFunction function;
-    Tw_Bool           done;
+    thrd_t            handle; ///<Platform Thread Handle
+    Tw_Float          update_rate; ///< The number of times @ref Tw_Update is called per second.
+    Tw_Float          duration; ///< The length of time in seconds it takes for the Tween to go from it's inital value to it's final value.
+    Tw_ThreadFunction function; ///< A generic function that may be passed to the thread
+    Tw_Bool           done; ///< signals when the thread is completed
 };
-
-void Tw_DestroyThread(Tw_Instance* i);
-
 
 
 #endif//TW_THREAD_INL

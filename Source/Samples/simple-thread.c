@@ -26,8 +26,7 @@ int main()
     //Thread handles the loop for us
     Tw_CreateThread(i, 30, 5, logger); //Thread starts running update immediately
     
-    //Cause the main program to wait until the tread is finished
-    //Try commenting it out and see what happens
+    //Cause the main program to wait until the thread is finished
     Tw_JoinThread(i, NULL);
     printf("Main Existed\n");
     return EXIT_SUCCESS;

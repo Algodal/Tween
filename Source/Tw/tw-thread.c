@@ -48,6 +48,9 @@ void Tw_DetachThread(Tw_Instance* i)
     thrd_detach(i->thread.handle);
 }
 
+/// @brief Built-in Thread callback function
+/// @param arg 
+/// @return 
 static int Tw_DefaultThreadCallback(void* arg)
 {
     Tw_Instance* i = (Tw_Instance*)arg;
