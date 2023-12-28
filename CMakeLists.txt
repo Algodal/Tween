@@ -13,6 +13,8 @@ include_directories(Source)
 set(TW_TW_FOLDER ${TW_SOURCE_DIR}/Source/Tw)
 set(TW_SCRIPT_FOLDER ${TW_SOURCE_DIR}/Scripts)
 
+configure_file(${TW_SCRIPT_FOLDER}/tw_version.h.in ${TW_TW_FOLDER}/tw_version.h)
+
 include(${TW_SCRIPT_FOLDER}/TwCopyFiles.cmake)
 TwCopyFiles(${TW_TW_FOLDER} ${TW_BINARY_DIR}/include/Tw "*.h" "--" "TW_BIN_HEADERS")
 
