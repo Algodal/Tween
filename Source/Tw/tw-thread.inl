@@ -9,8 +9,7 @@
 
 #ifdef DEBUG
 #define TW_ASSERT_THREAD(t) \
-    Tw_Assert(NULL!=t, "Thread can not be null"); \
-    Tw_Assert(NULL!=(Tw_Ptr)t->handle, "Platform Thread Handle can not be NULL"); \
+    Tw_Assert(NULL!=(Tw_Ptr)t.handle, "Platform Thread Handle can not be NULL"); \
     (void)0
 #else
 #define TW_ASSERT_THREAD(t)
