@@ -87,6 +87,11 @@ static int Tw_DefaultThreadCallback(void* arg)
     return 0;
 }
 
+Tw_Bool Tw_IsThreadDone(Tw_Instance* i)
+{
+    return i->thread.done;
+}
+
 Tw_Bool Tw_Tween(
     Tw_Float           initial,
     Tw_Float           final,

@@ -5,7 +5,6 @@
 #include <string.h>
 
 #include "Tw/tw-tween.h"
-#include "Tw/tw-thread.h"
 
 //thread allows you to pass an optional function for an generic purpose
 //I use this for logging purposes

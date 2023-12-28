@@ -20,6 +20,7 @@ TW_EXPORT bool Tw_CreateThread(
 TW_EXPORT void Tw_JoinThread(Tw_Instance* i, Tw_Ptr res);
 TW_EXPORT void Tw_DetachThread(Tw_Instance* i);
 TW_EXPORT Tw_Ptr Tw_GetPlatformThreadHandle(Tw_Instance* i);
+TW_EXPORT Tw_Bool Tw_IsThreadDone(Tw_Instance* i);
 TW_EXPORT Tw_Bool Tw_Tween(
     Tw_Float           initial,
     Tw_Float           final,

@@ -7,6 +7,7 @@
 #include "tw-functions.h"
 #include "tw-instance.h"
 #include "tw-easing.h"
+#include "tw-thread.h"
 
 #ifdef __cplusplus
 extern "C" {
