@@ -49,8 +49,7 @@ void Tw_DetachThread(Tw_Instance* i)
 }
 
 /// @brief Built-in Thread callback function
-/// @param arg 
-/// @return 
+/// @param arg passed Tween Instance
 static int Tw_DefaultThreadCallback(void* arg)
 {
     Tw_Instance* i = (Tw_Instance*)arg;
