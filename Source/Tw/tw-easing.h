@@ -12,7 +12,7 @@ extern "C" {
 
 #define TW_PI 3.141592f
 
-TW_EXPORT Tw_Float Tw_DefaultEase(Tw_Float x);
+TW_EXPORT Tw_Float Tw_DefaultEasingFunction(Tw_Float x);
 TW_EXPORT Tw_Float Tw_EaseInSine(Tw_Float x);
 TW_EXPORT Tw_Float Tw_EaseOutSine(Tw_Float x);
 TW_EXPORT Tw_Float Tw_EaseInOutSine(Tw_Float x);
@@ -44,7 +44,7 @@ TW_EXPORT Tw_Float Tw_EaseInBounce(Tw_Float x);
 TW_EXPORT Tw_Float Tw_EaseOutBounce(Tw_Float x);
 TW_EXPORT Tw_Float Tw_EaseInOutBounce(Tw_Float x);
 
-#define TW_DEFAULT_EASE Tw_DefaultEase
+#define TW_DEFAULT_EASING_FUNCTION Tw_DefaultEasingFunction
 #define TW_EASE_IN_SINE Tw_EaseInSine
 #define TW_EASE_OUT_SINE Tw_EaseOutSine
 #define TW_EASE_IN_OUT_SINE Tw_EaseInOutSine

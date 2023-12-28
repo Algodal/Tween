@@ -27,8 +27,17 @@ struct Tw_Instance
     Tw_Ptr             property;
     Tw_PropertyUpdater property_updater;
     Tw_EasingFunction  easing_function;
-    Tw_Thread*         thread;
+    Tw_Thread          thread;
 };
+
+Tw_Instance* Tw_InitializeInstance(
+    Tw_Instance* i,
+    Tw_Float           initial,
+    Tw_Float           final,
+    Tw_EasingFunction  easing_function,
+    Tw_Ptr             property,
+    Tw_PropertyUpdater property_updater
+);
 
 #endif//TW_INSTANCE_INL
 

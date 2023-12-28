@@ -16,10 +16,6 @@ TW_EXPORT void Tw_Assert(bool cond, const char* msg);
 #define Tw_Assert(...)
 #endif
 
-#define TW_MIN(a,b) (((a)<(b))?(a):(b))
-#define TW_MAX(a,b) (((a)>(b))?(a):(b))
-#define TW_CLAMP(x, lower, upper) (TW_MIN((upper), TW_MAX((x), (lower))))
-#define TW_DIRECTION(i, f) (((i)<=(f))?(+1):(-1))
 
 #ifdef __cplusplus
 }

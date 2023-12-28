@@ -12,6 +12,8 @@ extern "C" {
 
 #define TW_DEFAULT_STEPRATE 120.0f
 
+typedef void (*Tw_ThreadFunction)(Tw_Float, Tw_Float);
+
 
 #ifdef __cplusplus
 }

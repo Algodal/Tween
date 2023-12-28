@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "tw-functions.h"
+#include "tw-functions.inl"
 
 #ifdef DEBUG
 void Tw_Assert(bool cond, const char* msg)

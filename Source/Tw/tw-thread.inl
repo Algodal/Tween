@@ -20,8 +20,11 @@ typedef struct Tw_Thread     Tw_Thread;
 
 struct Tw_Thread
 {
-    thrd_t   handle;
-    Tw_Float steprate;
+    thrd_t            handle;
+    Tw_Float          update_rate;
+    Tw_Float          duration;
+    Tw_ThreadFunction function;
+    Tw_Bool           done;
 };
 
 void Tw_DestroyThread(Tw_Instance* i);

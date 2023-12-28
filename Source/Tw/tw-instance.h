@@ -13,7 +13,6 @@ extern "C" {
 TW_EXPORT Tw_Instance* Tw_CreateInstance(
     Tw_Float           initial,
     Tw_Float           final,
-    Tw_Float           duration,
     Tw_EasingFunction  easing_function,
     Tw_Ptr             property,
     Tw_PropertyUpdater property_updater
@@ -26,7 +25,8 @@ TW_EXPORT Tw_Bool Tw_IsDone(Tw_Instance* i);
 TW_EXPORT void Tw_Reset(Tw_Instance* i);
 TW_EXPORT void Tw_Flip(Tw_Instance* i);
 
-
+void Tw_FloatUpdater(Tw_Ptr property, Tw_Float value);
+#define TW_FLOAT_UPDATER Tw_FloatUpdater
 
 
 

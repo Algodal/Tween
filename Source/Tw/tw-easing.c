@@ -7,7 +7,7 @@
 
 #include "tw-easing.h"
 
-Tw_Float Tw_DefaultEase(Tw_Float x)
+Tw_Float Tw_DefaultEasingFunction(Tw_Float x)
 {
     return x;
 }

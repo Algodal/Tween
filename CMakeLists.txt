@@ -23,18 +23,29 @@ add_library(tw SHARED
     Source/Tw/tw-functions.c
     Source/Tw/tw-instance.c
     Source/Tw/tw-easing.c
+    Source/Tw/tw-thread.c
+    Source/tinycthread/tinycthread.c
 )
 
 target_link_libraries(tw
     PRIVATE m
 )
 
-add_library(tw-thread SHARED
-    Source/Tw/tw-thread.c
-    Source/tinycthread/tinycthread.c
+## Executables ------------------------------
+
+add_executable(tw-sample-loop
+    Source/Samples/simple-loop.c
 )
 
-target_link_libraries(tw-thread
+target_link_libraries(tw-sample-loop
+    PRIVATE tw
+)
+
+add_executable(tw-sample-thread
+    Source/Samples/simple-thread.c
+)
+
+target_link_libraries(tw-sample-thread
     PRIVATE tw
 )
 
