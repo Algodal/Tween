@@ -24,6 +24,7 @@ struct Tw_Thread
     Tw_Float          update_rate; ///< The number of times @ref Tw_Update is called per second.
     Tw_Float          duration; ///< The length of time in seconds it takes for the Tween to go from it's inital value to it's final value.
     Tw_ThreadFunction function; ///< A generic function that may be passed to the thread
+    Tw_Loop           loop;///< The loop action of the thread
     Tw_Bool           done; ///< signals when the thread is completed
 };
 

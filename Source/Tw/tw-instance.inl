@@ -39,6 +39,8 @@ Tw_Instance* Tw_InitializeInstance(
     Tw_PropertyUpdater property_updater
 );
 
+Tw_Instance* Tw_CopyInstance(Tw_Instance* i);
+
 #endif//TW_INSTANCE_INL
 
 

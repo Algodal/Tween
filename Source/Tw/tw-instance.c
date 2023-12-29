@@ -43,6 +43,13 @@ Tw_Instance* Tw_InitializeInstance(
     return i;
 }
 
+Tw_Instance* Tw_CopyInstance(Tw_Instance* i)
+{
+    Tw_Instance* new_i = malloc(sizeof(Tw_Instance));
+    memcpy(new_i, i, sizeof(Tw_Instance));
+    return new_i;
+}
+
 void Tw_DestroyInstance(Tw_Instance* i)
 {
     if(i)
@@ -50,8 +57,6 @@ void Tw_DestroyInstance(Tw_Instance* i)
         free(i);
     }
 }
-
-
 
 Tw_Float Tw_GetValue(Tw_Instance* i)
 {
