@@ -98,6 +98,50 @@ void Tw_FloatUpdater(Tw_Ptr property, Tw_Float value)
     float_property[0] = (float)value;
 }
 
+Tw_Float Tw_GetSimulatedStep(
+    Tw_Float initial, 
+    Tw_Float final, 
+    Tw_Float update_rate, 
+    Tw_Float duration
+)
+{
+    const int direction = TW_DIRECTION(initial, final);
+    const Tw_Float size = TW_SIZE(initial, final) * direction;
+    const Tw_Float step_per_sec = size / duration;
+    return step_per_sec / update_rate;
+}
+
+Tw_Float Tw_GetSimulatedTweenValue(
+    Tw_Float initial, 
+    Tw_Float final, 
+    Tw_Float percent,
+    Tw_EasingFunction easing_function
+)
+{
+    const int direction = TW_DIRECTION(initial, final);
+    const Tw_Float size = TW_SIZE(initial, final) * direction;
+    Tw_Float easing = easing_function(fabs(percent));
+	return initial + ((size * easing) * direction);
+}
+
+Tw_Float Tw_SimulateTween(
+    Tw_Float* current_value,
+    Tw_Float initial, 
+    Tw_Float final, 
+    Tw_Float update_rate, 
+    Tw_Float duration,
+    Tw_EasingFunction easing_function
+)
+{
+    *current_value += Tw_GetSimulatedStep(initial, final, update_rate, duration);
+    
+    const int direction = TW_DIRECTION(initial, final);
+    const Tw_Float size = TW_SIZE(initial, final) * direction;
+    Tw_Float percent = TW_CLAMP(*current_value / size, 0, 1);
+
+    return Tw_GetSimulatedTweenValue(initial, final, percent, easing_function);
+}
+
 
 
 

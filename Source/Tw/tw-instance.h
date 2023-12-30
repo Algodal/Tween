@@ -78,8 +78,50 @@ TW_EXPORT void Tw_FloatUpdater(Tw_Ptr property, Tw_Float value);
 /// @brief Default property_updater for a single float value.
 #define TW_FLOAT_UPDATER Tw_FloatUpdater
 
+/// @brief This is an optional Utility function meant to be used with
+///        @ref Tw_Update.  It creates an approximate most appropriate step value
+///        based on the information provided.
+/// @param initial Initial Tween Value
+/// @param final  Final Tween Value
+/// @param update_rate Assumed Tw_Update calls per second
+/// @param duration Assumed length of time the Tween will last
+/// @return Step Value to pass to Tw_Update
+Tw_Float Tw_GetSimulatedStep(
+    Tw_Float initial, 
+    Tw_Float final, 
+    Tw_Float update_rate, 
+    Tw_Float duration
+);
 
+/// @brief This simulates a Tween without allocating an instance or creating a thread
+///        by using the information provided.
+/// @param initial The initial value of the Tween
+/// @param final The final value of the Tween
+/// @param percent User-Defined indicator of the Tween progress
+/// @param easing_function Easing function used for the Tweening
+/// @return Tween value between initial and final inclusive
+Tw_Float Tw_GetSimulatedTweenValue(
+    Tw_Float initial, 
+    Tw_Float final, 
+    Tw_Float percent,
+    Tw_EasingFunction easing_function
+);
 
+/// @brief Combined @ref Tw_GetSimulatedStep and @ref Tw_GetSimulatedTweenValue
+///        to create a full simulation of a Tween.  The parameters are the same
+///        as both functions.  There is no allocation of
+///        instance and no creation of thread but the user must provide a pointer
+///        to a @ref Tw_Float to keep track of the current Tween value.
+/// @param current_value A user-provided pointer to a Tw_Float that keeps track to the tween current value.
+/// @return Tween value between initial and final inclusive
+Tw_Float Tw_SimulateTween(
+    Tw_Float* current_value,
+    Tw_Float initial, 
+    Tw_Float final, 
+    Tw_Float update_rate, 
+    Tw_Float duration,
+    Tw_EasingFunction easing_function
+);
 
 
 #ifdef __cplusplus
