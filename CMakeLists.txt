@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
+set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS 1 CACHE BOOL "Suppress warnings from external projects")
 
 project(TW VERSION 1.0.0 DESCRIPTION "A Tween library written in C" LANGUAGES C)
 
@@ -19,22 +20,46 @@ include(${TW_SCRIPT_FOLDER}/TwCopyFiles.cmake)
 TwCopyFiles(${TW_TW_FOLDER} ${TW_BINARY_DIR}/include/Tw "*.h" "--" "TW_BIN_HEADERS")
 
 ## Libraries ------------------------------
+include(FetchContent)
+
+FetchContent_Declare(
+    tinycthread
+    GIT_REPOSITORY https://github.com/tinycthread/tinycthread.git
+    GIT_TAG master
+)
+
+FetchContent_MakeAvailable(tinycthread)
+
+add_library(tinycthread-lib STATIC
+    ${tinycthread_SOURCE_DIR}/source/tinycthread.c
+)
+
+target_include_directories(tinycthread-lib PUBLIC
+    ${tinycthread_SOURCE_DIR}/source
+)
 
 add_library(tw SHARED
     Source/Tw/twTypes.h
     Source/Tw/twEasing.c
+    Source/Tw/TwTween.c
     Source/Tw/twExport.h
+    Source/Tw/twVersion.h
 )
-
-
 
 target_link_libraries(tw
     PRIVATE m
+    PRIVATE tinycthread-lib
 )
 
 ## Executables ------------------------------
 
+add_executable(run_job
+    Source/Samples/run_job.c
+)
 
+target_link_libraries(run_job
+    PUBLIC tw
+)
 
 ## Generate Export Header -----------------
 

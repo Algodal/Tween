@@ -1,10 +1,11 @@
 #include "twTween.h"
 #include "twEasing.h"
 #include "time.h" //for thread
-#include "tinycthread.h"
+#include <tinycthread.h>
 #include "twUtils.inl"
 #include <stdlib.h> //EXIT_SUCCESS
 #include <math.h> //fabs
+#include <stdio.h> //printf
 
 // Common Thread Definitions
 
@@ -15,14 +16,6 @@ typedef struct TweenVariant TweenVariant;
 enum {
     TYPE_STATE = 0,
     TYPE_JOB = 1
-};
-
-struct TweenVariant {
-    int type; //TYPE_STATE, TYPE_JOB
-    union {
-        TweenJob job;
-        TweenState state;
-    };
 };
 
 struct TweenJob {
@@ -46,6 +39,14 @@ struct TweenState {
     Tw_Float value;
 };
 
+struct TweenVariant {
+    int type; //TYPE_STATE, TYPE_JOB
+    union {
+        TweenJob job;
+        TweenState state;
+    };
+};
+
 Tw_TweenPreset Tw_InitTween(Tw_Float from, Tw_Float to, Tw_Float duration, Tw_Float delay) {
     Tw_TweenPreset preset = {0};
     preset.from = from;
@@ -54,13 +55,6 @@ Tw_TweenPreset Tw_InitTween(Tw_Float from, Tw_Float to, Tw_Float duration, Tw_Fl
     preset.delay = delay;
     return preset;
 }
-
-// Debug
-#ifndef NDEBUG
-#define TwLog(F, ...) if(F) printf(__VA_ARGS__)
-#else
-#define TwLog(F, ...)
-#endif
 
 // Threads
 
@@ -117,8 +111,8 @@ Tw_TweenId Tw_AllocateTweenJob(Tw_TweenPreset preset, Tw_EasingFunction easingfn
     variant.type = TYPE_JOB;
     variant.job.preset;
     variant.job.property = property;
-    variant.job.ticker = (ticker == clock || ticker == NULL) ? clock : ticker;
-    variant.job.tickPerSec = (ticker == clock || ticker == NULL) ? CLOCKS_PER_SEC : (tickPerSec == 0) ? 1 : tickPerSec;
+    variant.job.ticker = ((void*)ticker == (void*)clock || ticker == NULL) ? (Tw_Ticker)clock : ticker;
+    variant.job.tickPerSec = ((void*)ticker == (void*)clock || ticker == NULL) ? CLOCKS_PER_SEC : (tickPerSec == 0) ? 1 : tickPerSec;
     variant.job.easingfn = (easingfn == NULL) ? TW_LINEAR : easingfn;
     variant.job.loop = loop;
     variant.job.flip = flip;
@@ -136,21 +130,21 @@ Tw_TweenId Tw_AllocateTweenJob(Tw_TweenPreset preset, Tw_EasingFunction easingfn
         return (Tw_TweenId)allocContext;
     }
 
-    Tw_Log(property == NULL, "Tw: Property can not be NULL");
-    Tw_Log(preset.duration == 0, "Tw: Duration can not be 0");
-    Tw_Log(preset.from == preset.to, "Tw: To and From can not be the same");
+    TW_LOG(property == NULL, "Tw: Property can not be NULL");
+    TW_LOG(preset.duration == 0, "Tw: Duration can not be 0");
+    TW_LOG(preset.from == preset.to, "Tw: To and From can not be the same");
 
     return 0;
 }
 
-bool Tw_RunJob(Tw_TweenPreset preset, Tw_EasingFunction easingfn, Tw_Property property, Tw_Ticker ticker, Tw_Tick tickPerSec)
+Tw_Bool Tw_RunJob(Tw_TweenPreset preset, Tw_EasingFunction easingfn, Tw_Property property, Tw_Ticker ticker, Tw_Tick tickPerSec)
 {
     TweenVariant variant = {0};
     variant.type = TYPE_JOB;
     variant.job.preset;
     variant.job.property = property;
-    variant.job.ticker = (ticker == clock || ticker == NULL) ? clock : ticker;
-    variant.job.tickPerSec = (ticker == clock || ticker == NULL) ? CLOCKS_PER_SEC : (tickPerSec == 0) ? 1 : tickPerSec;
+    variant.job.ticker = ((void*)ticker == (void*)clock || ticker == NULL) ? (Tw_Ticker)clock : ticker;
+    variant.job.tickPerSec = ((void*)ticker == (void*)clock || ticker == NULL) ? CLOCKS_PER_SEC : (tickPerSec == 0) ? 1 : tickPerSec;
     variant.job.easingfn = (easingfn == NULL) ? TW_LINEAR : easingfn;
     
     if(property && preset.duration && preset.from != preset.to) {
@@ -161,9 +155,9 @@ bool Tw_RunJob(Tw_TweenPreset preset, Tw_EasingFunction easingfn, Tw_Property pr
         return true;
     }
 
-    Tw_Log(property == NULL, "Tw: Property can not be NULL");
-    Tw_Log(preset.duration == 0, "Tw: Duration can not be 0");
-    Tw_Log(preset.from == preset.to, "Tw: To and From can not be the same");
+    TW_LOG(property == NULL, "Tw: Property can not be NULL");
+    TW_LOG(preset.duration == 0, "Tw: Duration can not be 0");
+    TW_LOG(preset.from == preset.to, "Tw: To and From can not be the same");
 
     return false;
 }
