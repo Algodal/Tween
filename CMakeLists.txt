@@ -53,11 +53,19 @@ target_link_libraries(tw
 
 ## Executables ------------------------------
 
-add_executable(job
-    Source/Samples/job.c
+add_executable(run_job
+    Source/Samples/run_job.c
 )
 
-target_link_libraries(job
+target_link_libraries(run_job
+    PRIVATE tw
+)
+
+add_executable(alloc_job
+    Source/Samples/alloc_job.c
+)
+
+target_link_libraries(alloc_job
     PRIVATE tw
 )
 

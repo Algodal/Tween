@@ -6,7 +6,6 @@
 #include <time.h>
 
 #include "Tw/twTween.h"
-#include "utils.h"
 
 int main()
 {
@@ -21,44 +20,46 @@ int main()
         .to = 100
     };
 
-    /*Tw_TweenPreset preset2 = {
+    Tw_TweenPreset preset2 = {
         .delay = 0,
-        .duration = 1,
+        .duration = duration,
         .from = 75,
         .to = 200
-    };*/
+    };
 
     Tw_Bool res = false;
 
-    //Running Tween Job Thread in Detach State. Thread will not wait for Main program. Therefore we use Sleep to wait.
-    res = Tw_RunTweenJob(preset1, TW_EASE_IN_BOUNCE, TW_DETACH, &translation, NULL, 0);
+    Tw_TweenId id1 = Tw_AllocateTweenJob(preset1, TW_EASE_IN_BOUNCE, 0, 0, TW_JOIN, &translation, NULL, 0);
+    if(!id1)
+    {
+        printf("Failed to Run Tween Job!");
+        exit(EXIT_FAILURE);
+    }
+    Tw_FreeTweenId(id1);
 
-    if(!res)
+    
+
+    //Ignore neither detach or join. User required to join manually. Ignore is not available for RunTweenJob func
+    //need to wait on thread before freeing id
+    //Loop is set to true. This job will run infinitely
+    Tw_TweenId id2 = Tw_AllocateTweenJob(preset2, TW_EASE_OUT_QUAD, true, false, TW_DETACH, &scale, NULL, 0);
+
+    if(!id2)
     {
         printf("Failed to Run Tween Job!");
         exit(EXIT_FAILURE);
     }
 
-    //Tw_TweenId id1 = Tw_AllocateTweenJob(preset1, TW_EASE_IN_BOUNCE, 0, 0, TW_IGNORE, &translation, NULL, 0);
-    //Tw_TweenId id2 = Tw_AllocateTweenJob(preset2, TW_EASE_OUT_QUAD, &scale, NULL, 0, 0, 0);
 
-    /*if(id1 == 0) {
-        printf("Failed to Run Tween Job!");
-        exit(EXIT_FAILURE);
-    }*/
-
-    /*if(id2 == 0)
-    {
-        printf("Failed to Run Tween Job!");
-        exit(EXIT_FAILURE);
-    }*/
-
-    for(int i = 0; i < 1000; i++)
+    //infinite loop due to .loop parameter set to true in Tw_AllocateTweenJob
+    while(Tw_TweenJobRunning(id2))
     {
         printf("translation: %.2f | scale: %.2f\n", translation, scale);
     }
+    //Tw_TweenJobJoin(id2);
+    Tw_FreeTweenId(id2);
 
-    sleep_seconds(duration * 2);
+
     printf("done!\n");
     return EXIT_SUCCESS;
 }

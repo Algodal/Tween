@@ -67,7 +67,6 @@ static int SpawnCallback(void* arg)
     TweenVariant* variant = (TweenVariant*)arg;
     if(variant->type == TYPE_JOB)
     {
-        variant->job.running = true;
         TweenJob* job = &variant->job;
         Tw_TweenPreset preset = job->preset;
 
@@ -121,21 +120,22 @@ static int SpawnCallback(void* arg)
 
 Tw_TweenId Tw_AllocateTweenJob(Tw_TweenPreset preset, Tw_EasingFunction easingfn, Tw_Bool loop, Tw_Bool flip, Tw_ThreadMethod method, Tw_Property property, Tw_Ticker ticker, Tw_Tick tickPerSec)
 {
-    TweenVariant* variant = malloc(sizeof(TweenVariant));
-    if (!variant) return 0;
-    memset(variant, 0, sizeof(TweenVariant));
-
-    variant->type = TYPE_JOB;
-    variant->job.method = method;
-    variant->job.preset = preset;
-    variant->job.property = property;
-    variant->job.ticker = ((void*)ticker == (void*)clock || ticker == NULL) ? (Tw_Ticker)clock : ticker;
-    variant->job.tickPerSec = ((void*)ticker == (void*)clock || ticker == NULL) ? CLOCKS_PER_SEC : (tickPerSec == 0) ? 1 : tickPerSec;
-    variant->job.easingfn = (easingfn == NULL) ? TW_LINEAR : easingfn;
-    variant->job.loop = loop;
-    variant->job.flip = flip;
-    
     if(property && preset.duration && preset.from != preset.to) {
+        TweenVariant* variant = malloc(sizeof(TweenVariant));
+        if (!variant) return 0;
+        memset(variant, 0, sizeof(TweenVariant));
+
+        variant->type = TYPE_JOB;
+        variant->job.method = method;
+        variant->job.preset = preset;
+        variant->job.property = property;
+        variant->job.ticker = ((void*)ticker == (void*)clock || ticker == NULL) ? (Tw_Ticker)clock : ticker;
+        variant->job.tickPerSec = ((void*)ticker == (void*)clock || ticker == NULL) ? CLOCKS_PER_SEC : (tickPerSec == 0) ? 1 : tickPerSec;
+        variant->job.easingfn = (easingfn == NULL) ? TW_LINEAR : easingfn;
+        variant->job.loop = loop;
+        variant->job.flip = flip;
+
+        variant->job.running = true;
         int op = thrd_create(&variant->job.thr, SpawnCallback, (void*)variant);
         if(op == thrd_success) 
         {
@@ -146,12 +146,19 @@ Tw_TweenId Tw_AllocateTweenJob(Tw_TweenPreset preset, Tw_EasingFunction easingfn
             if(method == TW_JOIN)
             {
                 thrd_join(variant->job.thr, &variant->job.res);
+            } else
+            {
+                TW_LOG(method != TW_IGNORE, "TW: Invalid Thread Method\n");
             }
-            
-            TW_LOG(method != TW_IGNORE, "TW: Invalid Thread Method\n");
 
             return (Tw_TweenId)variant;
+        } else
+        {
+            memset(variant, 0, sizeof(TweenVariant));
+            free(variant);
         }
+
+        
 
         return 0;
     }
@@ -165,20 +172,21 @@ Tw_TweenId Tw_AllocateTweenJob(Tw_TweenPreset preset, Tw_EasingFunction easingfn
 
 Tw_Bool Tw_RunTweenJob(Tw_TweenPreset preset, Tw_EasingFunction easingfn, Tw_ThreadMethod method, Tw_Property property, Tw_Ticker ticker, Tw_Tick tickPerSec)
 {
-    TweenVariant* variant = malloc(sizeof(TweenVariant));
-    if (!variant) return 0;
-    memset(variant, 0, sizeof(TweenVariant));
-
-    variant->type = TYPE_JOB;
-    variant->job.method = method;
-    variant->job.preset = preset;
-    variant->job.property = property;
-    variant->job.ticker = ((void*)ticker == (void*)clock || ticker == NULL) ? (Tw_Ticker)clock : ticker;
-    variant->job.tickPerSec = ((void*)ticker == (void*)clock || ticker == NULL) ? CLOCKS_PER_SEC : (tickPerSec == 0) ? 1 : tickPerSec;
-    variant->job.easingfn = (easingfn == NULL) ? TW_LINEAR : easingfn;
-    variant->job.autofree = true;
-    
     if(property && preset.duration && preset.from != preset.to && (method == TW_DETACH || method == TW_JOIN)) {
+        TweenVariant* variant = malloc(sizeof(TweenVariant));
+        if (!variant) return 0;
+        memset(variant, 0, sizeof(TweenVariant));
+
+        variant->type = TYPE_JOB;
+        variant->job.method = method;
+        variant->job.preset = preset;
+        variant->job.property = property;
+        variant->job.ticker = ((void*)ticker == (void*)clock || ticker == NULL) ? (Tw_Ticker)clock : ticker;
+        variant->job.tickPerSec = ((void*)ticker == (void*)clock || ticker == NULL) ? CLOCKS_PER_SEC : (tickPerSec == 0) ? 1 : tickPerSec;
+        variant->job.easingfn = (easingfn == NULL) ? TW_LINEAR : easingfn;
+        variant->job.autofree = true;
+        variant->job.running = true;
+
         int op = thrd_create(&variant->job.thr, SpawnCallback, (void*)variant);
         if(op == thrd_success) 
         {
@@ -194,6 +202,10 @@ Tw_Bool Tw_RunTweenJob(Tw_TweenPreset preset, Tw_EasingFunction easingfn, Tw_Thr
             TW_LOG(!(method == TW_DETACH || method == TW_JOIN), "TW: Run Job only permits either Detach or Join Thread Method\n");
 
             return true;
+        } else
+        {
+            memset(variant, 0, sizeof(TweenVariant));
+            free(variant);
         }
     }
 

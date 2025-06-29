@@ -17,3 +17,5 @@ void sleep_seconds(float seconds)
 {
     cross_platform_sleep_ms(seconds * 1000);
 }
+
+#include <inttypes.h>
