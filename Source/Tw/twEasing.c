@@ -1,13 +1,10 @@
 //Copyright (C) 2023 Alrick Grandison, Algodal™
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <math.h>
 
-#include "tw-easing.h"
+#include "twEasing.h"
 
-Tw_Float Tw_DefaultEasingFunction(Tw_Float x)
+Tw_Float Tw_Linear(Tw_Float x)
 {
     return x;
 }

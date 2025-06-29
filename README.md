@@ -1,8 +1,8 @@
 # Algodal™ Tween Library
-A Tween library written in C
+A minimal Tween library written in C for speed and simplicity.
 
 ## License
-This project is licensed under the algodal license - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the GPL license - see the [LICENSE](LICENSE) file for details.
 © All rights reserved.
 
 ## Version
@@ -11,6 +11,13 @@ The current version of this project can be seen on the [VERSION](VERSION.md) fil
 ## Team
 * Lead:		Alrick Grandison
 
+## Contribution
+
+Feel Free open a pull request or issue.
+
+## Maintainers
+
+This library development is lead by the Algodal team. Checkout our website to see what else we are working on. You can support us by purchasing one of our projects.
 
 ## Algodal™
 [![www.algodal.com](https://i.pinimg.com/originals/94/8e/0b/948e0b76fe239d745ff08d2481b66a4c.png)](https://www.algodal.com)

@@ -3,8 +3,8 @@
 #ifndef TW_EASING_H
 #define TW_EASING_H
 
-#include "tw_export.h"
-#include "tw-types.h"
+#include "twExport.h"
+#include "twTypes.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -14,7 +14,7 @@ extern "C" {
 
 #define TW_PI 3.141592f ///< Tween Library PI Value
 
-TW_EXPORT Tw_Float Tw_DefaultEasingFunction(Tw_Float x);
+TW_EXPORT Tw_Float Tw_Linear(Tw_Float x);
 TW_EXPORT Tw_Float Tw_EaseInSine(Tw_Float x);
 TW_EXPORT Tw_Float Tw_EaseOutSine(Tw_Float x);
 TW_EXPORT Tw_Float Tw_EaseInOutSine(Tw_Float x);
@@ -46,7 +46,7 @@ TW_EXPORT Tw_Float Tw_EaseInBounce(Tw_Float x);
 TW_EXPORT Tw_Float Tw_EaseOutBounce(Tw_Float x);
 TW_EXPORT Tw_Float Tw_EaseInOutBounce(Tw_Float x);
 
-#define TW_DEFAULT_EASING_FUNCTION Tw_DefaultEasingFunction
+#define TW_LINEAR Tw_Linear
 #define TW_EASE_IN_SINE Tw_EaseInSine
 #define TW_EASE_OUT_SINE Tw_EaseOutSine
 #define TW_EASE_IN_OUT_SINE Tw_EaseInOutSine

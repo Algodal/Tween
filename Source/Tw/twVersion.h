@@ -1,10 +1,10 @@
 //Copyright (C) 2023 Alrick Grandison, Algodal™
 
-#define TW_VERSION "0.1.0"
+#define TW_VERSION "1.0.0"
 enum
 {
-TW_MAJOR_VERSION = 0,
-TW_MAJOR_MINOR   = 1,
+TW_MAJOR_VERSION = 1,
+TW_MAJOR_MINOR   = 0,
 TW_MAJOR_PATCH   = 0,
 };
 

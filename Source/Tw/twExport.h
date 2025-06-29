@@ -9,20 +9,20 @@
 #  ifndef TW_EXPORT
 #    ifdef tw_EXPORTS
         /* We are building this library */
-#      define TW_EXPORT __attribute__((visibility("default")))
+#      define TW_EXPORT __declspec(dllexport)
 #    else
         /* We are using this library */
-#      define TW_EXPORT __attribute__((visibility("default")))
+#      define TW_EXPORT __declspec(dllimport)
 #    endif
 #  endif
 
 #  ifndef TW_NO_EXPORT
-#    define TW_NO_EXPORT __attribute__((visibility("hidden")))
+#    define TW_NO_EXPORT 
 #  endif
 #endif
 
 #ifndef TW_DEPRECATED
-#  define TW_DEPRECATED __attribute__ ((__deprecated__))
+#  define TW_DEPRECATED __declspec(deprecated)
 #endif
 
 #ifndef TW_DEPRECATED_EXPORT
