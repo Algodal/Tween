@@ -27,6 +27,10 @@ struct TweenJob {
     Tw_Bool loop;
     Tw_Bool flip;
     thrd_t thr;
+    Tw_Bool running;
+    Tw_ThreadMethod method;
+    int res;
+    bool autofree;
 };
 
 struct TweenState {
@@ -63,29 +67,34 @@ static int SpawnCallback(void* arg)
     TweenVariant* variant = (TweenVariant*)arg;
     if(variant->type == TYPE_JOB)
     {
-        TweenJob job = variant->job;
-        Tw_TweenPreset preset = job.preset;
+        variant->job.running = true;
+        TweenJob* job = &variant->job;
+        Tw_TweenPreset preset = job->preset;
 
         Tw_Float vector_distance = preset.to - preset.from;
-        Tw_Tick stamp = job.ticker();
+        Tw_Tick stamp = job->ticker();
         
         do
         {
-            Tw_Float elapsed = (job.ticker() - stamp) / job.tickPerSec;
-            Tw_Float progress = TW_MAX(elapsed / preset.duration, 1.0f);
-            Tw_Float eased_progress = job.easingfn(progress);
+            Tw_Float elapsed = (job->ticker() - stamp) / job->tickPerSec;
+            if(elapsed < preset.delay) continue; 
+
+            Tw_Float tween_elapsed = elapsed - preset.delay;
+            Tw_Float progress = TW_MIN(tween_elapsed / preset.duration, 1.0f);
+            Tw_Float eased_progress = job->easingfn(progress);
             Tw_Float value = (vector_distance * eased_progress) + preset.from;
-            *job.property = value;
+            *job->property = value;
 
-            if(elapsed < preset.delay) continue; else elapsed -= preset.delay;
+            
+            
 
-            if(elapsed >= preset.duration)
+            if(tween_elapsed >= preset.duration)
             {
-                if(job.loop)
+                if(job->loop)
                 {
-                    stamp = job.ticker();
+                    stamp = job->ticker();
                     
-                    if(job.flip)
+                    if(job->flip)
                     {
                         Tw_Float temp = preset.to;
                         preset.to = preset.from;
@@ -99,35 +108,52 @@ static int SpawnCallback(void* arg)
             }
         } while(true);
 
+        variant->job.running = false;
+        if(variant->job.autofree)
+        {
+            free(variant);
+        }
         return EXIT_SUCCESS;
     }
 
     return EXIT_FAILURE;
 }
 
-Tw_TweenId Tw_AllocateTweenJob(Tw_TweenPreset preset, Tw_EasingFunction easingfn, Tw_Property property, Tw_Ticker ticker, Tw_Tick tickPerSec, Tw_Bool loop, Tw_Bool flip)
+Tw_TweenId Tw_AllocateTweenJob(Tw_TweenPreset preset, Tw_EasingFunction easingfn, Tw_Bool loop, Tw_Bool flip, Tw_ThreadMethod method, Tw_Property property, Tw_Ticker ticker, Tw_Tick tickPerSec)
 {
-    TweenVariant variant = {0};
-    variant.type = TYPE_JOB;
-    variant.job.preset;
-    variant.job.property = property;
-    variant.job.ticker = ((void*)ticker == (void*)clock || ticker == NULL) ? (Tw_Ticker)clock : ticker;
-    variant.job.tickPerSec = ((void*)ticker == (void*)clock || ticker == NULL) ? CLOCKS_PER_SEC : (tickPerSec == 0) ? 1 : tickPerSec;
-    variant.job.easingfn = (easingfn == NULL) ? TW_LINEAR : easingfn;
-    variant.job.loop = loop;
-    variant.job.flip = flip;
+    TweenVariant* variant = malloc(sizeof(TweenVariant));
+    if (!variant) return 0;
+    memset(variant, 0, sizeof(TweenVariant));
+
+    variant->type = TYPE_JOB;
+    variant->job.method = method;
+    variant->job.preset = preset;
+    variant->job.property = property;
+    variant->job.ticker = ((void*)ticker == (void*)clock || ticker == NULL) ? (Tw_Ticker)clock : ticker;
+    variant->job.tickPerSec = ((void*)ticker == (void*)clock || ticker == NULL) ? CLOCKS_PER_SEC : (tickPerSec == 0) ? 1 : tickPerSec;
+    variant->job.easingfn = (easingfn == NULL) ? TW_LINEAR : easingfn;
+    variant->job.loop = loop;
+    variant->job.flip = flip;
     
     if(property && preset.duration && preset.from != preset.to) {
-        thrd_t thr;
-        int op = thrd_create(&thr, SpawnCallback, (void*)&variant);
-        if(op == thrd_success) thrd_detach(thr); else return 0;
+        int op = thrd_create(&variant->job.thr, SpawnCallback, (void*)variant);
+        if(op == thrd_success) 
+        {
+            if(method == TW_DETACH)
+            {
+                thrd_detach(variant->job.thr);
+            } else 
+            if(method == TW_JOIN)
+            {
+                thrd_join(variant->job.thr, &variant->job.res);
+            }
+            
+            TW_LOG(method != TW_IGNORE, "TW: Invalid Thread Method\n");
 
-        variant.job.thr = thr;
-        TweenVariant* allocContext = malloc(sizeof(TweenVariant));
-        *allocContext = variant;
+            return (Tw_TweenId)variant;
+        }
 
-
-        return (Tw_TweenId)allocContext;
+        return 0;
     }
 
     TW_LOG(property == NULL, "Tw: Property can not be NULL");
@@ -137,22 +163,38 @@ Tw_TweenId Tw_AllocateTweenJob(Tw_TweenPreset preset, Tw_EasingFunction easingfn
     return 0;
 }
 
-Tw_Bool Tw_RunJob(Tw_TweenPreset preset, Tw_EasingFunction easingfn, Tw_Property property, Tw_Ticker ticker, Tw_Tick tickPerSec)
+Tw_Bool Tw_RunTweenJob(Tw_TweenPreset preset, Tw_EasingFunction easingfn, Tw_ThreadMethod method, Tw_Property property, Tw_Ticker ticker, Tw_Tick tickPerSec)
 {
-    TweenVariant variant = {0};
-    variant.type = TYPE_JOB;
-    variant.job.preset;
-    variant.job.property = property;
-    variant.job.ticker = ((void*)ticker == (void*)clock || ticker == NULL) ? (Tw_Ticker)clock : ticker;
-    variant.job.tickPerSec = ((void*)ticker == (void*)clock || ticker == NULL) ? CLOCKS_PER_SEC : (tickPerSec == 0) ? 1 : tickPerSec;
-    variant.job.easingfn = (easingfn == NULL) ? TW_LINEAR : easingfn;
-    
-    if(property && preset.duration && preset.from != preset.to) {
-        thrd_t thr;
-        int op = thrd_create(&thr, SpawnCallback, (void*)&variant);
-        if(op == thrd_success) thrd_detach(thr); else return false;
+    TweenVariant* variant = malloc(sizeof(TweenVariant));
+    if (!variant) return 0;
+    memset(variant, 0, sizeof(TweenVariant));
 
-        return true;
+    variant->type = TYPE_JOB;
+    variant->job.method = method;
+    variant->job.preset = preset;
+    variant->job.property = property;
+    variant->job.ticker = ((void*)ticker == (void*)clock || ticker == NULL) ? (Tw_Ticker)clock : ticker;
+    variant->job.tickPerSec = ((void*)ticker == (void*)clock || ticker == NULL) ? CLOCKS_PER_SEC : (tickPerSec == 0) ? 1 : tickPerSec;
+    variant->job.easingfn = (easingfn == NULL) ? TW_LINEAR : easingfn;
+    variant->job.autofree = true;
+    
+    if(property && preset.duration && preset.from != preset.to && (method == TW_DETACH || method == TW_JOIN)) {
+        int op = thrd_create(&variant->job.thr, SpawnCallback, (void*)variant);
+        if(op == thrd_success) 
+        {
+            if(method == TW_DETACH)
+            {
+                thrd_detach(variant->job.thr);
+            } else 
+            if(method == TW_JOIN)
+            {
+                thrd_join(variant->job.thr, &variant->job.res);
+            }
+            
+            TW_LOG(!(method == TW_DETACH || method == TW_JOIN), "TW: Run Job only permits either Detach or Join Thread Method\n");
+
+            return true;
+        }
     }
 
     TW_LOG(property == NULL, "Tw: Property can not be NULL");
@@ -160,6 +202,35 @@ Tw_Bool Tw_RunJob(Tw_TweenPreset preset, Tw_EasingFunction easingfn, Tw_Property
     TW_LOG(preset.from == preset.to, "Tw: To and From can not be the same");
 
     return false;
+}
+
+
+Tw_Bool Tw_TweenJobRunning(Tw_TweenId id)
+{
+    TW_LOG(id == 0, "TW: Invalid ID\n");
+
+    TweenVariant* variant = (TweenVariant*)id;
+    if(variant && variant->type == TYPE_JOB)
+    {
+        return variant->job.running;
+    }
+
+    return false;
+}
+
+void Tw_TweenJobJoin(Tw_TweenId id)
+{
+    TW_LOG(id == 0, "TW: Invalid ID\n");
+
+    TweenVariant* variant = (TweenVariant*)id;
+    if(variant && variant->type == TYPE_JOB)
+    {
+        if(variant->job.method != TW_DETACH && variant->job.method != TW_JOIN)
+        {
+            variant->job.method = TW_JOIN;
+            thrd_join(variant->job.thr, &variant->job.res);
+        }
+    }
 }
 
 // Loops

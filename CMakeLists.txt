@@ -53,12 +53,12 @@ target_link_libraries(tw
 
 ## Executables ------------------------------
 
-add_executable(run_job
-    Source/Samples/run_job.c
+add_executable(job
+    Source/Samples/job.c
 )
 
-target_link_libraries(run_job
-    PUBLIC tw
+target_link_libraries(job
+    PRIVATE tw
 )
 
 ## Generate Export Header -----------------
