@@ -25,7 +25,7 @@ struct TweenJob {
     Tw_Ticker ticker;
     Tw_Tick tickPerSec;
     thrd_t thr;
-    Tw_Bool running;
+    volatile Tw_Bool running;
     int res;
     bool autofree;
 };
@@ -33,9 +33,9 @@ struct TweenJob {
 struct TweenState {
     Tw_TweenPreset preset;
     Tw_EasingFunction easingfn;
-    Tw_Float elapsed;
-    Tw_Float value;
-    Tw_Bool running;
+    volatile Tw_Float elapsed;
+    volatile Tw_Float value;
+    volatile Tw_Bool running;
 };
 
 struct TweenVariant {
@@ -63,39 +63,39 @@ static int SpawnCallback(void* arg)
     if(variant->type == TYPE_JOB)
     {
         TweenJob* job = &variant->job;
-        Tw_TweenPreset preset = job->preset;
-
-        Tw_Float vector_distance = preset.to - preset.from;
         Tw_Tick stamp = job->ticker();
+        Tw_TweenPreset* preset = &job->preset;
+        Tw_Float vector_distance = preset->to - preset->from;
         
         do
         {
             Tw_Float elapsed = (Tw_Float)((long double)(job->ticker() - stamp) / (long double)job->tickPerSec);
-            if(elapsed < preset.delay) continue; 
+            if(elapsed < preset->delay) continue; 
 
-            Tw_Float tween_elapsed = elapsed - preset.delay;
-            Tw_Float progress = TW_MIN(tween_elapsed / preset.duration, 1.0f);
+            Tw_Float tween_elapsed = elapsed - preset->delay;
+            Tw_Float progress = TW_MIN(tween_elapsed / preset->duration, 1.0f);
             Tw_Float eased_progress = job->easingfn(progress);
-            Tw_Float value = (vector_distance * eased_progress) + preset.from;
+            Tw_Float value = (vector_distance * eased_progress) + preset->from;
             *job->property = value;
 
             
             
 
-            if(tween_elapsed >= preset.duration)
+            if(tween_elapsed >= preset->duration)
             {
-                if(preset.loop == TW_FOREVER || preset.loop > TW_NONE)
-                {
+                if(preset->loop == TW_FOREVER || preset->loop > TW_NONE)
+                {   
                     stamp = job->ticker();
-                    
-                    if(preset.flip)
-                    {
-                        Tw_Float temp = preset.to;
-                        preset.to = preset.from;
-                        preset.from = temp;
-                    }
 
-                    if(preset.loop > TW_NONE) preset.loop --;
+                    if(preset->flip)
+                    {
+                        Tw_Float temp = preset->to;
+                        preset->to = preset->from;
+                        preset->from = temp;
+                        vector_distance = preset->to - preset->from;
+                    }                    
+
+                    if(preset->loop > TW_NONE) preset->loop --;
                 }
                 else
                 {
@@ -213,35 +213,36 @@ void Tw_UpdateTweenState(Tw_TweenId id, Tw_Float delta)
     TweenVariant* variant = (TweenVariant*)id;
     if(variant->type == TYPE_STATE)
     {
-        Tw_TweenPreset preset = variant->state.preset;
-        Tw_Float vector_distance = preset.to - preset.from;
+        Tw_TweenPreset* preset = &variant->state.preset;
+        Tw_Float vector_distance = preset->to - preset->from;
         
         if(true)
         {
             variant->state.elapsed += delta;
-            Tw_Float progress = TW_MIN(variant->state.elapsed / preset.duration, 1.0f);
+            Tw_Float progress = TW_MIN(variant->state.elapsed / preset->duration, 1.0f);
             Tw_Float eased_progress = variant->state.easingfn(progress);
-            variant->state.value = (vector_distance * eased_progress) + preset.from;
+            variant->state.value = (vector_distance * eased_progress) + preset->from;
 
             Tw_Float elapsed = variant->state.elapsed;
-            if(elapsed < preset.delay) return;
+            if(elapsed < preset->delay) return;
 
-            Tw_Float tween_elapsed = elapsed - preset.delay;
+            Tw_Float tween_elapsed = elapsed - preset->delay;
 
-            if(tween_elapsed >= preset.duration)
+            if(tween_elapsed >= preset->duration)
             {
-                if(preset.loop == TW_FOREVER || preset.loop > TW_NONE)
+                if(preset->loop == TW_FOREVER || preset->loop > TW_NONE)
                 {
                     variant->state.elapsed = 0;
                     
-                    if(preset.flip)
+                    if(preset->flip)
                     {
-                        Tw_Float temp = variant->state.preset.to;
-                        variant->state.preset.to = variant->state.preset.from;
-                        variant->state.preset.from = temp;
+                        Tw_Float temp = preset->to;
+                        preset->to = preset->from;
+                        preset->from = temp;
+                        vector_distance = preset->to - preset->from;
                     }
 
-                    if(preset.loop > TW_NONE) preset.loop --;
+                    if(preset->loop > TW_NONE) preset->loop --;
                 } else {
                      variant->state.running = false;
                 }

@@ -13,11 +13,12 @@ The current version of this project can be seen on the [VERSION](VERSION.md) fil
 
 ## Contribution
 
-Feel Free open a pull request or issue.
+Feel Free open a pull request or issue. This is an open project and free for all, use commercial or otherwise.
+It is forever free.
 
 ## Maintainers
 
-This library development is lead by the Algodal team. Checkout our website to see what else we are working on. You can support us by purchasing one of our projects.
+This library development is lead by the Algodal team. We welcome contributers! Checkout our website to see what else we are working on. You can support us by purchasing one of our projects.
 
 ## Algodal™
 [![www.algodal.com](https://i.pinimg.com/originals/94/8e/0b/948e0b76fe239d745ff08d2481b66a4c.png)](https://www.algodal.com)

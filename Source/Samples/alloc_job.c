@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include "utils.h"
 
 #include "Tw/twTween.h"
 
@@ -42,7 +43,8 @@ int main()
     count = 0;
     while(Tw_TweenRunning(id1))
     {
-        if(count++ % 10 == 0) printf("translation: %.2f\n", translation);
+        if(count % 10 == 0) printf("translation: %.2f\n", translation);
+        count++;
     }
     Tw_FreeTweenId(id1);
 
@@ -61,13 +63,18 @@ int main()
     count = 0;
     while(Tw_TweenRunning(id2))
     {
-        if(count++ % 10 == 0) printf("scale: %.2f\n", scale);
 
-        if (count == 1000) 
+        if(count % 100 == 0) printf("%d) scale: %.2f\n", count, scale);
+
+        
+        if(count == 1000000)
         {
-            printf("Terminating Loop\n");
             Tw_TweenEndLoop(id2);
+            sleep_seconds(2);
+            printf("Terminating Tween Loop - Tween will still run until finish\n");
         }
+
+        count++;
     }
     Tw_FreeTweenId(id2);
 
