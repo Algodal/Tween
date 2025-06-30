@@ -77,34 +77,48 @@ target_link_libraries(state
     PRIVATE tw
 )
 
-include(FetchContent)
+option(ENABLE_SDL_SAMPLES "Build SDL2-based samples" OFF)
 
-# Avoid SDL2d.dll, use SDL2.dll in all configurations
-set(CMAKE_BUILD_TYPE Release CACHE STRING "" FORCE) # Force SDL to use release build regardless
+if(TARGET build-samples OR ENABLE_SDL_SAMPLES)
+    message(STATUS "Configuring SDL2 samples...")
 
-FetchContent_Declare(
-  SDL2
-  GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
-  GIT_TAG release-2.28.5 # Or latest stable tag
-)
+    # Avoid SDL2d.dll, use SDL2.dll in all configurations
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "" FORCE)
 
-FetchContent_MakeAvailable(SDL2)
+    include(FetchContent)
 
+    FetchContent_Declare(
+      SDL2
+      GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+      GIT_TAG release-2.28.5 # Or latest stable tag
+    )
 
-# Add SDL2 manually
-add_executable(state_sdl
-    Source/Samples/state_sdl.c
-)
-target_link_libraries(state_sdl
-    PRIVATE tw SDL2::SDL2
-)
+    FetchContent_MakeAvailable(SDL2)
 
-add_executable(job_sdl
-    Source/Samples/job_sdl.c
-)
-target_link_libraries(job_sdl
-    PRIVATE tw SDL2::SDL2
-)
+    # Add SDL2-based sample executables
+    add_executable(state_sdl
+        Source/Samples/state_sdl.c
+    )
+    target_link_libraries(state_sdl
+        PRIVATE tw SDL2::SDL2
+    )
+
+    add_executable(job_sdl
+        Source/Samples/job_sdl.c
+    )
+    target_link_libraries(job_sdl
+        PRIVATE tw SDL2::SDL2
+    )
+
+    # Add these targets to the build-samples custom target
+    add_dependencies(build-samples
+        state_sdl
+        job_sdl
+    )
+
+    set_target_properties(state_sdl PROPERTIES EXCLUDE_FROM_ALL TRUE)
+    set_target_properties(job_sdl PROPERTIES EXCLUDE_FROM_ALL TRUE)
+endif()
 
 ## Custom Target: Group All Sample Executables ------------------
 
