@@ -69,6 +69,51 @@ target_link_libraries(alloc_job
     PRIVATE tw
 )
 
+add_executable(state
+    Source/Samples/state.c
+)
+
+target_link_libraries(state
+    PRIVATE tw
+)
+
+include(FetchContent)
+
+# Avoid SDL2d.dll, use SDL2.dll in all configurations
+set(CMAKE_DEBUG_POSTFIX "")
+set(SDL_STATIC OFF CACHE BOOL "" FORCE)
+set(SDL_SHARED ON CACHE BOOL "" FORCE)
+set(SDL_TEST OFF CACHE BOOL "" FORCE)
+set(SDL_INSTALL_TESTS OFF CACHE BOOL "" FORCE)
+set(SDL2_DISABLE_UNINSTALL ON CACHE BOOL "" FORCE)
+set(CMAKE_BUILD_TYPE Release CACHE STRING "" FORCE) # Force SDL to use release build regardless
+
+FetchContent_Declare(
+  SDL2
+  GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+  GIT_TAG release-2.28.5 # Or latest stable tag
+)
+
+FetchContent_MakeAvailable(SDL2)
+
+
+# Add SDL2 manually
+add_executable(state_sdl
+    Source/Samples/state_sdl.c
+)
+target_link_libraries(state_sdl
+    PRIVATE tw SDL2::SDL2
+)
+
+add_executable(job_sdl
+    Source/Samples/job_sdl.c
+)
+target_link_libraries(job_sdl
+    PRIVATE tw SDL2::SDL2
+)
+
+
+
 ## Generate Export Header -----------------
 
 set(CMAKE_C_VISIBILITY_PRESET hidden)

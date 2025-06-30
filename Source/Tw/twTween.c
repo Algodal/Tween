@@ -24,11 +24,8 @@ struct TweenJob {
     Tw_Property property;
     Tw_Ticker ticker;
     Tw_Tick tickPerSec;
-    Tw_Bool loop;
-    Tw_Bool flip;
     thrd_t thr;
     Tw_Bool running;
-    Tw_ThreadMethod method;
     int res;
     bool autofree;
 };
@@ -36,11 +33,9 @@ struct TweenJob {
 struct TweenState {
     Tw_TweenPreset preset;
     Tw_EasingFunction easingfn;
-    Tw_Bool loop;
-    Tw_Bool flip;
     Tw_Float elapsed;
-    Tw_Float progress;
     Tw_Float value;
+    Tw_Bool running;
 };
 
 struct TweenVariant {
@@ -75,7 +70,7 @@ static int SpawnCallback(void* arg)
         
         do
         {
-            Tw_Float elapsed = (job->ticker() - stamp) / job->tickPerSec;
+            Tw_Float elapsed = (Tw_Float)((long double)(job->ticker() - stamp) / (long double)job->tickPerSec);
             if(elapsed < preset.delay) continue; 
 
             Tw_Float tween_elapsed = elapsed - preset.delay;
@@ -89,16 +84,18 @@ static int SpawnCallback(void* arg)
 
             if(tween_elapsed >= preset.duration)
             {
-                if(job->loop)
+                if(preset.loop == TW_FOREVER || preset.loop > TW_NONE)
                 {
                     stamp = job->ticker();
                     
-                    if(job->flip)
+                    if(preset.flip)
                     {
                         Tw_Float temp = preset.to;
                         preset.to = preset.from;
                         preset.from = temp;
                     }
+
+                    if(preset.loop > TW_NONE) preset.loop --;
                 }
                 else
                 {
@@ -118,7 +115,7 @@ static int SpawnCallback(void* arg)
     return EXIT_FAILURE;
 }
 
-Tw_TweenId Tw_AllocateTweenJob(Tw_TweenPreset preset, Tw_EasingFunction easingfn, Tw_Bool loop, Tw_Bool flip, Tw_ThreadMethod method, Tw_Property property, Tw_Ticker ticker, Tw_Tick tickPerSec)
+Tw_TweenId Tw_AllocateTweenJob(Tw_TweenPreset preset, Tw_EasingFunction easingfn, Tw_Property property, Tw_Ticker ticker, Tw_Tick tickPerSec)
 {
     if(property && preset.duration && preset.from != preset.to) {
         TweenVariant* variant = malloc(sizeof(TweenVariant));
@@ -126,30 +123,17 @@ Tw_TweenId Tw_AllocateTweenJob(Tw_TweenPreset preset, Tw_EasingFunction easingfn
         memset(variant, 0, sizeof(TweenVariant));
 
         variant->type = TYPE_JOB;
-        variant->job.method = method;
         variant->job.preset = preset;
         variant->job.property = property;
         variant->job.ticker = ((void*)ticker == (void*)clock || ticker == NULL) ? (Tw_Ticker)clock : ticker;
         variant->job.tickPerSec = ((void*)ticker == (void*)clock || ticker == NULL) ? CLOCKS_PER_SEC : (tickPerSec == 0) ? 1 : tickPerSec;
         variant->job.easingfn = (easingfn == NULL) ? TW_LINEAR : easingfn;
-        variant->job.loop = loop;
-        variant->job.flip = flip;
-
         variant->job.running = true;
+
         int op = thrd_create(&variant->job.thr, SpawnCallback, (void*)variant);
         if(op == thrd_success) 
         {
-            if(method == TW_DETACH)
-            {
-                thrd_detach(variant->job.thr);
-            } else 
-            if(method == TW_JOIN)
-            {
-                thrd_join(variant->job.thr, &variant->job.res);
-            } else
-            {
-                TW_LOG(method != TW_IGNORE, "TW: Invalid Thread Method\n");
-            }
+            thrd_detach(variant->job.thr);
 
             return (Tw_TweenId)variant;
         } else
@@ -163,22 +147,21 @@ Tw_TweenId Tw_AllocateTweenJob(Tw_TweenPreset preset, Tw_EasingFunction easingfn
         return 0;
     }
 
-    TW_LOG(property == NULL, "Tw: Property can not be NULL");
-    TW_LOG(preset.duration == 0, "Tw: Duration can not be 0");
-    TW_LOG(preset.from == preset.to, "Tw: To and From can not be the same");
+    TW_LOG(property == NULL, "TW: Property can not be NULL");
+    TW_LOG(preset.duration == 0, "TW: Duration can not be 0");
+    TW_LOG(preset.from == preset.to, "TW: To and From can not be the same");
 
     return 0;
 }
 
-Tw_Bool Tw_RunTweenJob(Tw_TweenPreset preset, Tw_EasingFunction easingfn, Tw_ThreadMethod method, Tw_Property property, Tw_Ticker ticker, Tw_Tick tickPerSec)
+Tw_Bool Tw_RunTweenJob(Tw_TweenPreset preset, Tw_EasingFunction easingfn, Tw_Property property, Tw_Ticker ticker, Tw_Tick tickPerSec)
 {
-    if(property && preset.duration && preset.from != preset.to && (method == TW_DETACH || method == TW_JOIN)) {
+    if(property && preset.duration && preset.from != preset.to && preset.loop != TW_FOREVER) {
         TweenVariant* variant = malloc(sizeof(TweenVariant));
         if (!variant) return 0;
         memset(variant, 0, sizeof(TweenVariant));
 
         variant->type = TYPE_JOB;
-        variant->job.method = method;
         variant->job.preset = preset;
         variant->job.property = property;
         variant->job.ticker = ((void*)ticker == (void*)clock || ticker == NULL) ? (Tw_Ticker)clock : ticker;
@@ -190,16 +173,7 @@ Tw_Bool Tw_RunTweenJob(Tw_TweenPreset preset, Tw_EasingFunction easingfn, Tw_Thr
         int op = thrd_create(&variant->job.thr, SpawnCallback, (void*)variant);
         if(op == thrd_success) 
         {
-            if(method == TW_DETACH)
-            {
-                thrd_detach(variant->job.thr);
-            } else 
-            if(method == TW_JOIN)
-            {
-                thrd_join(variant->job.thr, &variant->job.res);
-            }
-            
-            TW_LOG(!(method == TW_DETACH || method == TW_JOIN), "TW: Run Job only permits either Detach or Join Thread Method\n");
+            thrd_detach(variant->job.thr);
 
             return true;
         } else
@@ -209,45 +183,17 @@ Tw_Bool Tw_RunTweenJob(Tw_TweenPreset preset, Tw_EasingFunction easingfn, Tw_Thr
         }
     }
 
-    TW_LOG(property == NULL, "Tw: Property can not be NULL");
-    TW_LOG(preset.duration == 0, "Tw: Duration can not be 0");
-    TW_LOG(preset.from == preset.to, "Tw: To and From can not be the same");
+    TW_LOG(preset.loop == TW_FOREVER, "TW: Run Job is not allowed to loop forever\n");
+    TW_LOG(property == NULL, "TW: Property can not be NULL\n");
+    TW_LOG(preset.duration == 0, "TW: Duration can not be 0\n");
+    TW_LOG(preset.from == preset.to, "TW: To and From can not be the same\n");
 
     return false;
-}
-
-
-Tw_Bool Tw_TweenJobRunning(Tw_TweenId id)
-{
-    TW_LOG(id == 0, "TW: Invalid ID\n");
-
-    TweenVariant* variant = (TweenVariant*)id;
-    if(variant && variant->type == TYPE_JOB)
-    {
-        return variant->job.running;
-    }
-
-    return false;
-}
-
-void Tw_TweenJobJoin(Tw_TweenId id)
-{
-    TW_LOG(id == 0, "TW: Invalid ID\n");
-
-    TweenVariant* variant = (TweenVariant*)id;
-    if(variant && variant->type == TYPE_JOB)
-    {
-        if(variant->job.method != TW_DETACH && variant->job.method != TW_JOIN)
-        {
-            variant->job.method = TW_JOIN;
-            thrd_join(variant->job.thr, &variant->job.res);
-        }
-    }
 }
 
 // Loops
 
-Tw_TweenId Tw_AllocateTweenState(Tw_TweenPreset preset, Tw_EasingFunction easingfn, Tw_Bool loop, Tw_Bool flip)
+Tw_TweenId Tw_AllocateTweenState(Tw_TweenPreset preset, Tw_EasingFunction easingfn)
 {
     if(preset.duration && preset.from != preset.to)
     {
@@ -256,8 +202,7 @@ Tw_TweenId Tw_AllocateTweenState(Tw_TweenPreset preset, Tw_EasingFunction easing
         variant->type = TYPE_STATE;    
         variant->state.preset = preset;
         variant->state.easingfn = (easingfn == NULL) ? TW_LINEAR : easingfn;
-        variant->state.loop = loop;
-        variant->state.flip = flip;
+        variant->state.running = true;
         return (Tw_TweenId) variant;
     }
     return 0;
@@ -274,28 +219,31 @@ void Tw_UpdateTweenState(Tw_TweenId id, Tw_Float delta)
         if(true)
         {
             variant->state.elapsed += delta;
-            Tw_Float progress = TW_MAX(variant->state.elapsed / preset.duration, 1.0f);
+            Tw_Float progress = TW_MIN(variant->state.elapsed / preset.duration, 1.0f);
             Tw_Float eased_progress = variant->state.easingfn(progress);
             variant->state.value = (vector_distance * eased_progress) + preset.from;
 
             Tw_Float elapsed = variant->state.elapsed;
-            if(elapsed >= preset.delay)
+            if(elapsed < preset.delay) return;
+
+            Tw_Float tween_elapsed = elapsed - preset.delay;
+
+            if(tween_elapsed >= preset.duration)
             {
-                elapsed -= preset.delay;
-                
-                if(elapsed >= preset.duration)
+                if(preset.loop == TW_FOREVER || preset.loop > TW_NONE)
                 {
-                    if(variant->state.loop)
+                    variant->state.elapsed = 0;
+                    
+                    if(preset.flip)
                     {
-                        variant->state.elapsed = 0;
-                        
-                        if(variant->state.flip)
-                        {
-                            Tw_Float temp = variant->state.preset.to;
-                            variant->state.preset.to = variant->state.preset.from;
-                            variant->state.preset.from = temp;
-                        }
+                        Tw_Float temp = variant->state.preset.to;
+                        variant->state.preset.to = variant->state.preset.from;
+                        variant->state.preset.from = temp;
                     }
+
+                    if(preset.loop > TW_NONE) preset.loop --;
+                } else {
+                     variant->state.running = false;
                 }
             }
         }
@@ -312,17 +260,74 @@ Tw_Float Tw_GetTweenStateValue(Tw_TweenId id)
     return 0;
 }
 
-Tw_Bool Tw_TweenStateIncomplete(Tw_TweenId id)
+Tw_Float Tw_GetTweenStateProgress(Tw_TweenId id)
 {
     if(id)
     {
         TweenVariant* variant = (TweenVariant*)id;
-        if(variant->type == TYPE_STATE) return variant->state.elapsed < (variant->state.preset.duration + variant->state.preset.delay);
+        if(variant->type == TYPE_STATE) return TW_MIN(variant->state.elapsed / variant->state.preset.duration, 1.0f);
     }
     return 0;
 }
 
+// Common
+
+Tw_Bool Tw_TweenRunning(Tw_TweenId id)
+{
+    TW_LOG(id == 0, "TW: Invalid ID\n");
+
+    TweenVariant* variant = (TweenVariant*)id;
+    if(variant && variant->type == TYPE_STATE)
+    {
+        return variant->state.running;
+    } else
+    if(variant && variant->type == TYPE_JOB)
+    {
+        return variant->job.running;
+    }
+
+    return false;
+}
+
 void Tw_FreeTweenId(Tw_TweenId id)
 {
-    if(id) free((void*)id);
+    TW_LOG(id == 0, "TW: Invalid ID\n");
+
+    if(id) {
+        TweenVariant* variant = (TweenVariant*)id;
+        if(variant && variant->type == TYPE_STATE)
+        {
+            Tw_TweenEndLoop(id);
+            variant->state.running = false;
+        } else
+        if(variant && variant->type == TYPE_JOB)
+        {
+            Tw_TweenEndLoop(id);
+            while(Tw_TweenRunning(id)); //wait until thread returns
+        }
+
+        free((void*)id);
+    }
+}
+
+void Tw_TweenEndLoop(Tw_TweenId id)
+{
+    TW_LOG(id == 0, "TW: Invalid ID\n");
+
+    TweenVariant* variant = (TweenVariant*)id;
+    Tw_TweenPreset* preset = NULL;
+
+    if(variant && variant->type == TYPE_STATE)
+    {
+        preset = &variant->state.preset;
+    } else
+    if(variant && variant->type == TYPE_JOB)
+    {
+        preset = &variant->job.preset;
+    }
+
+    if(preset)
+    {
+        preset->loop = TW_NONE;
+    }
 }

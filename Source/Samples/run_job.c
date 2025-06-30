@@ -31,7 +31,7 @@ int main()
     Tw_Bool res = false;
 
     //Running Tween Job Thread in Detach State. Thread will not wait for Main program. Therefore we use Sleep to wait.
-    res = Tw_RunTweenJob(preset1, TW_EASE_IN_BOUNCE, TW_DETACH, &translation, NULL, 0);
+    res = Tw_RunTweenJob(preset1, TW_EASE_IN_BOUNCE, &translation, NULL, 0);
 
     if(!res)
     {
@@ -39,7 +39,7 @@ int main()
         exit(EXIT_FAILURE);
     }
 
-    res = Tw_RunTweenJob(preset2, TW_EASE_OUT_QUAD, TW_DETACH, &scale, NULL, 0);
+    res = Tw_RunTweenJob(preset2, TW_EASE_OUT_QUAD, &scale, NULL, 0);
 
     if(!res)
     {
