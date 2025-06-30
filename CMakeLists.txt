@@ -80,12 +80,6 @@ target_link_libraries(state
 include(FetchContent)
 
 # Avoid SDL2d.dll, use SDL2.dll in all configurations
-set(CMAKE_DEBUG_POSTFIX "")
-set(SDL_STATIC OFF CACHE BOOL "" FORCE)
-set(SDL_SHARED ON CACHE BOOL "" FORCE)
-set(SDL_TEST OFF CACHE BOOL "" FORCE)
-set(SDL_INSTALL_TESTS OFF CACHE BOOL "" FORCE)
-set(SDL2_DISABLE_UNINSTALL ON CACHE BOOL "" FORCE)
 set(CMAKE_BUILD_TYPE Release CACHE STRING "" FORCE) # Force SDL to use release build regardless
 
 FetchContent_Declare(
@@ -111,6 +105,27 @@ add_executable(job_sdl
 target_link_libraries(job_sdl
     PRIVATE tw SDL2::SDL2
 )
+
+## Custom Target: Group All Sample Executables ------------------
+
+add_custom_target(build-samples
+    COMMENT "Build all sample executables"
+)
+
+# Add all sample executables to this group, but not to ALL
+add_dependencies(build-samples
+    run_job
+    alloc_job
+    state
+    state_sdl
+    job_sdl
+)
+
+set_target_properties(run_job PROPERTIES EXCLUDE_FROM_ALL TRUE)
+set_target_properties(alloc_job PROPERTIES EXCLUDE_FROM_ALL TRUE)
+set_target_properties(state PROPERTIES EXCLUDE_FROM_ALL TRUE)
+set_target_properties(state_sdl PROPERTIES EXCLUDE_FROM_ALL TRUE)
+set_target_properties(job_sdl PROPERTIES EXCLUDE_FROM_ALL TRUE)
 
 
 
