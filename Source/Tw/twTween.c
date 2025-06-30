@@ -57,7 +57,7 @@ Tw_TweenPreset Tw_InitTween(Tw_Float from, Tw_Float to, Tw_Float duration, Tw_Fl
 
 // Threads
 
-static int SpawnCallback(void* arg)
+static int JobCallback(void* arg)
 {
     TweenVariant* variant = (TweenVariant*)arg;
     if(variant->type == TYPE_JOB)
@@ -130,7 +130,7 @@ Tw_TweenId Tw_AllocateTweenJob(Tw_TweenPreset preset, Tw_EasingFunction easingfn
         variant->job.easingfn = (easingfn == NULL) ? TW_LINEAR : easingfn;
         variant->job.running = true;
 
-        int op = thrd_create(&variant->job.thr, SpawnCallback, (void*)variant);
+        int op = thrd_create(&variant->job.thr, JobCallback, (void*)variant);
         if(op == thrd_success) 
         {
             thrd_detach(variant->job.thr);
@@ -170,7 +170,7 @@ Tw_Bool Tw_RunTweenJob(Tw_TweenPreset preset, Tw_EasingFunction easingfn, Tw_Pro
         variant->job.autofree = true;
         variant->job.running = true;
 
-        int op = thrd_create(&variant->job.thr, SpawnCallback, (void*)variant);
+        int op = thrd_create(&variant->job.thr, JobCallback, (void*)variant);
         if(op == thrd_success) 
         {
             thrd_detach(variant->job.thr);
